@@ -1,11 +1,24 @@
 import json
-import tkinter as tk 
+import tkinter as tk
+import sqlite3
 from tkinter import messagebox
 from modelos_conserjeria_V2 import Paquete
 
 estanteria = []
 historial_entregados = []
 
+conexion = sqlite3.connect("conserjeria_oficial.db")
+cursor = conexion.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS paquetes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        piso TEXT NOT NULL,
+        empresa TEXT NOT NULL,
+        vecino TEXT NOT NULL    
+    )
+''')
+conexion.commit()
+conexion.close()
 #Función para ver el historial de entregas 
 def ver_historial():
     
@@ -117,10 +130,19 @@ def leer_piso():
     
     
 
-    nuevo_paquete = Paquete(piso_escrito, empresa_escrita,vecino_escrito)# Variable que absorbe los parametros/objetos para la clase Paquete
-    estanteria.append(nuevo_paquete)#Añadir a la lista estantería los objetos asignados a un espacio
+    nuevo_paquete = Paquete(piso_escrito, empresa_escrita,vecino_escrito) #Variable que absorbe los parametros/objetos para la clase Paquete
+    estanteria.append(nuevo_paquete) #Añadir a la lista estantería los objetos asignados a un espacio
     
-    traduccion_y_escritura_json()
+    conexion = sqlite3.connect("conserjeria_oficial.db")
+    cursor = conexion.cursor()
+    cursor.execute('''
+        INSERT INTO paquetes (piso, empresa, vecino)
+        VALUES (?, ?, ?)
+    ''', (piso_escrito, empresa_escrita, vecino_escrito))
+    conexion.commit()
+    conexion.close()
+    
+    #traduccion_y_escritura_json()
 
     print(f"¡Objeto creado en memoria! Pertenece al piso {nuevo_paquete.piso}")
     # Creamos un pop-up de información. El primer texto es el título de la ventanita, el segundo es el mensaje.
